@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=yes">
+<title>🐔 Abdo W Bayda Pro · Farm Manager</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);min-height:100vh;padding:15px}
+.menu-btn{position:fixed;top:15px;left:15px;z-index:1100;background:#f39c12;color:#fff;border:none;font-size:26px;padding:8px 16px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,.4);cursor:pointer;font-weight:700}
+.fab{position:fixed;bottom:25px;right:25px;width:60px;height:60px;border-radius:50%;border:none;background:#27ae60;color:#fff;font-size:32px;box-shadow:0 8px 20px rgba(0,0,0,.5);cursor:pointer;z-index:1000;display:flex;align-items:center;justify-content:center;transition:.2s}
+.fab:active{transform:scale(.9)}
+.app-container{display:flex;max-width:1400px;margin:0 auto;gap:15px;position:relative}
+.sidebar{flex:0 0 230px;background:rgba(255,255,255,.96);border-radius:24px;padding:20px 12px;box-shadow:0 8px 25px rgba(0,0,0,.35);backdrop-filter:blur(5px);align-self:start;position:sticky;top:15px;transition:transform .35s ease,box-shadow .3s;height:fit-content;border:1px solid rgba(255,215,0,.2)}
+.sidebar h3{color:#1e3c72;font-size:17px;margin:14px 0 8px 8px;border-bottom:2px solid #f39c12;padding-bottom:4px}
+.sidebar-menu{list-style:none}
+.sidebar-menu li{margin:4px 0}
+.sidebar-menu a{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#fff;border-radius:30px;color:#1e3c72;text-decoration:none;font-weight:600;font-size:14px;border:2px solid transparent;transition:.2s;box-shadow:0 2px 5px rgba(0,0,0,.05)}
+.sidebar-menu a:hover{border-color:#f39c12;background:#fff9e6;transform:translateX(3px)}
+.sidebar .backup-box{margin-top:16px;padding:12px;background:#e8f0fe;border-radius:18px;font-size:13px}
+.backup-box input[type=file]{font-size:12px;padding:5px;margin:8px 0;width:100%}
+.main-content{flex:1;min-width:0}
+@media(max-width:900px){
+  .sidebar{position:fixed;top:0;left:0;height:100vh;width:270px;border-radius:0 20px 20px 0;z-index:1000;transform:translateX(-100%);box-shadow:none;padding-top:60px;overflow-y:auto}
+  .sidebar.open{transform:translateX(0);box-shadow:5px 0 30px rgba(0,0,0,.5)}
+  .app-container{flex-direction:column}
+  .dashboard{grid-template-columns:repeat(2,1fr)!important}
+  .main-content{width:100%}
+  body{padding:10px}
+  h1{font-size:20px;margin-top:40px}
+}
+.dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px}
+.stat-card{background:rgba(255,255,255,.95);padding:12px;border-radius:16px;text-align:center;box-shadow:0 4px 15px rgba(0,0,0,.2);border-right:4px solid #f39c12}
+.stat-number{font-size:20px;font-weight:700;color:#1e3c72}
+.stat-label{font-size:10px;color:#666;margin-top:3px;text-transform:uppercase}
+.card{background:#fff;padding:15px;border-radius:20px;margin-bottom:15px;box-shadow:0 4px 15px rgba(0,0,0,.1)}
+.category-section{background:#f8f9fa;border-radius:18px;padding:15px;margin-bottom:15px;border-right:5px solid #27ae60}
+.category-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;cursor:pointer}
+.category-name{font-size:18px;font-weight:700;color:#1e3c72;display:flex;align-items:center;gap:8px}
+input,select{width:100%;padding:11px;margin:5px 0;border-radius:12px;border:2px solid #e0e0e0;font-size:15px}
+input:focus,select:focus{outline:none;border-color:#1e3c72}
+label{font-size:13px;color:#555;margin-top:4px;display:block}
+.btn{padding:10px 14px;border:none;border-radius:12px;margin-top:6px;cursor:pointer;font-size:13px;font-weight:600;transition:transform .2s;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.btn:active{transform:scale(.97)}
+.btn-add{background:linear-gradient(135deg,#27ae60,#2ecc71);color:#fff;width:100%}
+.btn-add-small{background:#3498db;color:#fff;padding:7px 13px;font-size:12px}
+.btn-delete-small{background:#e74c3c;color:#fff;padding:6px 10px;font-size:11px}
+.btn-edit{background:#f39c12;color:#fff;padding:7px 11px;font-size:12px}
+.btn-complete{background:#9b59b6;color:#fff;width:100%}
+.btn-feed{background:#8bc34a;color:#fff;width:100%}
+.btn-export{background:#34495e;color:#fff}
+.btn-import{background:#16a085;color:#fff}
+.btn-report{background:#8e44ad;color:#fff;padding:6px 11px;font-size:11px}
+.btn-charts{background:#2980b9;color:#fff}
+.btn-monthly{background:#8e44ad;color:#fff}
+.btn-inv{background:#e67e22;color:#fff}
+.btn-notif{background:#c0392b;color:#fff}
+.btn-printall{background:#2c3e50;color:#fff}
+.race-card{background:#fff;border-radius:16px;padding:12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.1);border-right:4px solid #3498db}
+.race-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.race-name{font-weight:700;color:#333;font-size:15px}
+.progress-container{background:#e0e0e0;border-radius:10px;height:20px;margin:8px 0;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,#1e3c72,#3498db);border-radius:10px;transition:width .5s;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700}
+.status-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;color:#fff}
+.status-incubating{background:#3498db}.status-lockdown{background:#f39c12}.status-hatching{background:#e74c3c}.status-completed{background:#27ae60}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.info-item{background:#f8f9fa;padding:8px;border-radius:10px;font-size:12px}
+.info-label{color:#666;font-size:9px;text-transform:uppercase}
+.info-value{color:#333;font-weight:700}
+.mad-price{color:#27ae60;font-weight:700}
+.age-display{background:linear-gradient(135deg,#27ae60,#2ecc71);color:#fff;padding:10px;border-radius:12px;text-align:center;margin:10px 0;font-size:14px;font-weight:700}
+.age-big{font-size:20px;margin-bottom:5px}
+.completion-form{background:#fff3cd;border:2px solid #f39c12;border-radius:12px;padding:12px;margin:10px 0}
+.hatch-input-row{display:flex;align-items:center;gap:8px;margin:8px 0}
+.action-buttons{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.collapsible-content{display:none}
+.collapsible-content.active{display:block}
+.feed-card{background:#f1f8e9;border:2px solid #8bc34a;border-radius:16px;padding:15px;margin:15px 0}
+.feed-results-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.feed-stat{background:#f9f9f9;padding:8px;border-radius:10px}
+.profit-section,.medicine-section,.forecast-section{background:#f0f7ff;padding:12px;border-radius:14px;margin:12px 0;border-left:4px solid #f39c12}
+.temp-section{background:#fff5f5;padding:12px;border-radius:14px;margin:12px 0;border-left:4px solid #e74c3c}
+.inline-inputs{display:flex;gap:8px;flex-wrap:wrap}
+.inline-inputs input,.inline-inputs select{flex:1;min-width:70px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 24px;border-radius:30px;z-index:4000;opacity:0;transition:opacity .3s;font-size:14px;pointer-events:none}
+.toast.show{opacity:1}
+.compact-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.empty-state{text-align:center;padding:30px;color:#fff;opacity:.9}
+.db-status{position:fixed;top:15px;right:15px;background:rgba(0,0,0,.5);color:#fff;padding:5px 12px;border-radius:20px;font-size:11px;z-index:1100;transition:opacity 1s}
+.db-status.ok{background:rgba(39,174,96,.85)}
+.notif-badge{position:fixed;top:60px;left:15px;background:#e74c3c;color:#fff;border-radius:50%;width:22px;height:22px;font-size:11px;display:none;align-items:center;justify-content:center;font-weight:700;z-index:1100}
+.notif-badge.show{display:flex}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.65);z-index:3000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:20px;padding:24px;max-width:720px;width:95%;max-height:92vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:12px;right:14px;background:#e74c3c;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10}
+.modal-title{font-size:20px;font-weight:700;color:#1e3c72;margin-bottom:16px;padding-right:30px}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.charts-grid{grid-template-columns:1fr}}
+.chart-box{background:#f8f9fa;border-radius:14px;padding:14px}
+.chart-box h4{color:#1e3c72;margin-bottom:10px;font-size:13px}
+.inv-table,.month-table,.temp-log-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+.inv-table th,.month-table th,.temp-log-table th{background:#1e3c72;color:#fff;padding:9px;text-align:right}
+.inv-table td,.month-table td,.temp-log-table td{padding:8px;border-bottom:1px solid #eee}
+.inv-table tr:nth-child(even),.month-table tr:nth-child(even){background:#f8f9fa}
+.month-table th{background:#8e44ad}
+.temp-log-table th{background:#e74c3c}
+.stock-low{color:#e74c3c;font-weight:700}
+.stock-ok{color:#27ae60;font-weight:700}
+.quick-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+</style>
+</head>
+<body>
+
+<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+<div class="notif-badge" id="notifBadge">0</div>
+<div class="db-status" id="dbStatus">💾 …</div>
+<h1 style="text-align:center;color:#fff;margin-bottom:10px;text-shadow:2px 2px 4px #000;padding-top:5px;">🐣 عبض وبيضة · Abdo Farm</h1>
+
+<div class="app-container">
+
+<div class="sidebar" id="mainSidebar">
+  <h3>📂 الفئات</h3>
+  <ul class="sidebar-menu" id="sidebarCategories"></ul>
+  <h3>⚙️ الأدوات</h3>
+  <ul class="sidebar-menu">
+    <li><a href="#" onclick="scrollToTop();toggleSidebarIfMobile();return false;">📊 لوحة الأرباح</a></li>
+    <li><a href="#" onclick="openChartsModal();toggleSidebarIfMobile();return false;">📈 الرسوم البيانية</a></li>
+    <li><a href="#" onclick="openMonthlyModal();toggleSidebarIfMobile();return false;">💹 التقرير الشهري</a></li>
+    <li><a href="#" onclick="openInventoryModal();toggleSidebarIfMobile();return false;">📦 المخزون</a></li>
+    <li><a href="#" onclick="openNotifsModal();toggleSidebarIfMobile();return false;">🔔 التنبيهات</a></li>
+    <li><a href="#" onclick="printAllCategories();toggleSidebarIfMobile();return false;">🖨️ طباعة الكل</a></li>
+    <li><a href="#" onclick="document.getElementById('backup-section').scrollIntoView({behavior:'smooth'});toggleSidebarIfMobile();return false;">💾 النسخ الاحتياطي</a></li>
+  </ul>
+  <div class="backup-box" id="backup-section">
+    <strong>🔒 Backup</strong>
+    <button class="btn btn-export" style="width:100%;margin:8px 0" onclick="exportData()">⬇ تصدير</button>
+    <input type="file" id="importFile" accept=".json">
+    <button class="btn btn-import" style="width:100%" onclick="importData()">⬆ استيراد</button>
+  </div>
+</div>
+
+<div class="main-content">
+  <div class="dashboard">
+    <div class="stat-card"><div class="stat-number" id="totalCategories">0</div><div class="stat-label">الفئات</div></div>
+    <div class="stat-card"><div class="stat-number" id="totalRaces">0</div><div class="stat-label">السلالات</div></div>
+    <div class="stat-card"><div class="stat-number" id="totalActive">0</div><div class="stat-label">النشطة</div></div>
+    <div class="stat-card"><div class="stat-number" id="totalCompleted">0</div><div class="stat-label">المكتملة</div></div>
+    <div class="stat-card"><div class="stat-number" id="totalChicks">0</div><div class="stat-label">الكتاكيت</div></div>
+    <div class="stat-card"><div class="stat-number" id="totalInvestment">0 DH</div><div class="stat-label">الاستثمار</div></div>
+    <div class="stat-card"><div class="stat-number" id="totalRevenue">0 DH</div><div class="stat-label">الإيرادات</div></div>
+    <div class="stat-card"><div class="stat-number" id="totalProfit">0 DH</div><div class="stat-label">الأرباح</div></div>
+  </div>
+
+  <div class="quick-btns">
+    <button class="btn btn-charts" onclick="openChartsModal()">📈 رسوم بيانية</button>
+    <button class="btn btn-monthly" onclick="openMonthlyModal()">💹 تقرير شهري</button>
+    <button class="btn btn-inv" onclick="openInventoryModal()">📦 المخزون</button>
+    <button class="btn btn-notif" onclick="openNotifsModal()">🔔 التنبيهات</button>
+    <button class="btn btn-printall" onclick="printAllCategories()">🖨️ طباعة الكل</button>
+  </div>
+
+  <div class="card">
+    <h3>📁 إضافة فئة جديدة</h3>
+    <input id="categoryName" placeholder="اسم الفئة (مثل دجاج اللحم)">
+    <button class="btn btn-add" onclick="addCategory()">➕ إضافة فئة</button>
+  </div>
+
+  <div id="categoriesList"></div>
+
+  <div class="card" id="completedSection" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;padding-bottom:10px;border-bottom:2px solid #eee">
+      <span style="font-size:18px;font-weight:700;color:#1e3c72">🐔 جميع الكتاكيت المكتملة</span>
+    </div>
+    <div id="completedList"></div>
+  </div>
+
+  <div class="empty-state" id="emptyState">
+    <div style="font-size:60px">📁</div>
+    <p>لا توجد فئات بعد<br>أضف أول فئة أعلاه</p>
+  </div>
+</div>
+</div>
+
+<button class="fab" onclick="scrollToTop()">＋</button>
+<div id="toast" class="toast"></div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="chartsModal" onclick="if(event.target===this)closeModal('chartsModal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('chartsModal')">✕</button>
+    <div class="modal-title">📈 الرسوم البيانية</div>
+    <div class="charts-grid">
+      <div class="chart-box"><h4>💰 ربح / خسارة لكل فئة</h4><canvas id="chartProfit"></canvas></div>
+      <div class="chart-box"><h4>🥚 نسبة الفقس لكل سلالة</h4><canvas id="chartHatch"></canvas></div>
+      <div class="chart-box"><h4>📊 استثمار مقابل إيراد</h4><canvas id="chartInvRev"></canvas></div>
+      <div class="chart-box"><h4>🐥 توزيع الكتاكيت</h4><canvas id="chartChicks"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="monthlyModal" onclick="if(event.target===this)closeModal('monthlyModal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('monthlyModal')">✕</button>
+    <div class="modal-title">💹 التقرير الشهري للأرباح</div>
+    <div id="monthlyContent"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="inventoryModal" onclick="if(event.target===this)closeModal('inventoryModal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('inventoryModal')">✕</button>
+    <div class="modal-title">📦 إدارة المخزون</div>
+    <div style="background:#f0f7ff;border-radius:14px;padding:14px;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <input id="invName" placeholder="المنتج (كيس علف، دواء...)">
+        <input id="invQty" type="number" placeholder="الكمية الحالية">
+        <input id="invUnit" placeholder="الوحدة (كجم، قطعة...)">
+        <input id="invMin" type="number" placeholder="حد التنبيه الأدنى">
+      </div>
+      <input id="invNote" placeholder="ملاحظة (اختياري)">
+      <button class="btn btn-add" onclick="addInventoryItem()">➕ إضافة للمخزون</button>
+    </div>
+    <div id="inventoryTableContainer"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="notifsModal" onclick="if(event.target===this)closeModal('notifsModal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('notifsModal')">✕</button>
+    <div class="modal-title">🔔 التنبيهات والتذكيرات</div>
+    <div id="notifsContent"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+var data = { categories: [], inventory: [] };
+var db = null;
+var saveTimer = null;
+var chartInstances = {};
+
+// ═══════════════════════════════════════════════════════════
+//  INDEXEDDB
+// ═══════════════════════════════════════════════════════════
+function openDB() {
+  return new Promise(function(res, rej) {
+    if (!window.indexedDB) { rej('no-idb'); return; }
+    var r = indexedDB.open('AbdoFarmDB', 2);
+    r.onupgradeneeded = function(e) {
+      var d = e.target.result;
+      if (!d.objectStoreNames.contains('farm')) d.createObjectStore('farm', { keyPath: 'id' });
+    };
+    r.onsuccess = function(e) { res(e.target.result); };
+    r.onerror   = function()  { rej(r.error); };
+  });
+}
+function dbLoad(idb) {
+  return new Promise(function(res) {
+    var tx = idb.transaction('farm', 'readonly');
+    var r  = tx.objectStore('farm').get('main');
+    r.onsuccess = function() { res(r.result ? r.result.data : null); };
+    r.onerror   = function() { res(null); };
+  });
+}
+function dbSave(idb, payload) {
+  var tx = idb.transaction('farm', 'readwrite');
+  tx.objectStore('farm').put({ id: 'main', data: payload });
+}
+function persistData() {
+  if (db) dbSave(db, data);
+  else { try { localStorage.setItem('incubatorData', JSON.stringify(data)); } catch(e) {} }
+}
+function saveData() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(persistData, 600);
+  render();
+}
+function init() {
+  openDB().then(function(idb) {
+    db = idb;
+    return dbLoad(idb);
+  }).then(function(stored) {
+    if (stored && stored.categories) {
+      data = stored;
+    } else {
+      try {
+        var ls = JSON.parse(localStorage.getItem('incubatorData') || 'null');
+        if (ls && ls.categories) { data = ls; persistData(); }
+      } catch(e) {}
+    }
+    if (!data.inventory) data.inventory = [];
+    setStatus(true); render(); checkNotifs();
+  }).catch(function() {
+    try {
+      var ls = JSON.parse(localStorage.getItem('incubatorData') || 'null');
+      if (ls && ls.categories) data = ls;
+    } catch(e) {}
+    if (!data.inventory) data.inventory = [];
+    setStatus(false); render(); checkNotifs();
+  });
+}
+function setStatus(ok) {
+  var el = document.getElementById('dbStatus');
+  el.textContent = ok ? '💾 IndexedDB ✓' : '💾 localStorage';
+  el.className = 'db-status' + (ok ? ' ok' : '');
+  setTimeout(function() { el.style.opacity = '0'; }, 3000);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 3000);
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fMAD(n) { return (isNaN(n)||n==null) ? '0 DH' : Math.round(n).toLocaleString()+' DH'; }
+function fN(n,d) { d=d===undefined?2:d; return (isNaN(n)||n==null)?'0':n.toFixed(d); }
+function fD(s) {
+  if (!s) return '---';
+  try { var d=new Date(s); if(isNaN(d.getTime())) return '---'; return d.toISOString().split('T')[0].replace(/-/g,'/'); } catch(e) { return '---'; }
+}
+function totalChicks(cat) { return cat.races.reduce(function(t,r){ return t+(r.hatched||0); }, 0); }
+function forecastFeed(n, age) { var d=age<14?0.03:age<30?0.06:0.09; return n*d*30; }
+
+function getStatus(race) {
+  var now=new Date(), d18=new Date(race.d18), d21=new Date(race.d21);
+  if (race.completed) return { text:'مكتمل', cls:'status-completed', icon:'🐥' };
+  if (now>=d21) return { text:'جاهز', cls:'status-hatching', icon:'⏰' };
+  if (now>=d18) return { text:'إغلاق', cls:'status-lockdown', icon:'🔒' };
+  var left=Math.max(0,Math.ceil((d18-now)/86400000));
+  return { text:'تحضين ('+left+'ي)', cls:'status-incubating', icon:'🥚' };
+}
+function getProgress(race) {
+  return Math.min(Math.max(((new Date()-new Date(race.start))/86400000/21)*100,0),100);
+}
+function calcAge(s) {
+  if (!s) return null;
+  try {
+    var h=new Date(s); if(isNaN(h.getTime())) return null;
+    var diff=Math.floor((new Date()-h)/86400000);
+    if (diff<0) return {days:0, text:'لم يفقس بعد'};
+    if (diff===0) return {days:0, text:'اليوم'};
+    if (diff<7) return {days:diff, text:diff+' أيام'};
+    if (diff<30) { var w=Math.floor(diff/7),dy=diff%7; return {days:diff, text:w+' أسابيع '+dy+' أيام'}; }
+    var m=Math.floor(diff/30),rd=diff%30; return {days:diff, text:m+' شهر '+(rd>0?rd+' أيام':'')};
+  } catch(e) { return null; }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MODAL HELPERS
+// ═══════════════════════════════════════════════════════════
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════════
+//  SIDEBAR
+// ═══════════════════════════════════════════════════════════
+function toggleSidebar()        { document.getElementById('mainSidebar').classList.toggle('open'); }
+function toggleSidebarIfMobile(){ if(window.innerWidth<=900) document.getElementById('mainSidebar').classList.remove('open'); }
+function scrollToTop()          { window.scrollTo({top:0, behavior:'smooth'}); }
+
+function updateSidebar() {
+  var sb = document.getElementById('sidebarCategories');
+  if (!sb) return;
+  if (!data.categories.length) { sb.innerHTML = "<li style='padding:10px;color:#888'>لا توجد فئات</li>"; return; }
+  sb.innerHTML = data.categories.map(function(cat) {
+    return '<li><a href="#" onclick="document.getElementById(\'cat-'+cat.id+'\').scrollIntoView({behavior:\'smooth\'});toggleSidebarIfMobile();return false;">📁 '+esc(cat.name)+' <span style="font-size:11px">('+cat.races.length+')</span></a></li>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  NOTIFICATIONS
+// ═══════════════════════════════════════════════════════════
+function buildAlerts() {
+  var now=new Date(), alerts=[];
+  data.categories.forEach(function(cat) {
+    cat.races.forEach(function(race) {
+      if (race.completed) return;
+      var d18=new Date(race.d18), d21=new Date(race.d21);
+      var dTo21=Math.ceil((d21-now)/86400000);
+      var dTo18=Math.ceil((d18-now)/86400000);
+      if (dTo21<=0)  alerts.push({type:'danger',  icon:'🚨', msg:'السلالة <strong>'+esc(race.breed)+'</strong> في فئة <em>'+esc(cat.name)+'</em> — حان موعد الفقس!'});
+      else if(dTo21<=2) alerts.push({type:'warning', icon:'⏰', msg:'السلالة <strong>'+esc(race.breed)+'</strong> — الفقس خلال '+dTo21+' يوم'});
+      if (dTo18===0) alerts.push({type:'warning', icon:'🔒', msg:'السلالة <strong>'+esc(race.breed)+'</strong> — إغلاق الحاضنة اليوم!'});
+    });
+  });
+  data.inventory.forEach(function(item) {
+    if (item.minQty && parseFloat(item.qty)<=parseFloat(item.minQty))
+      alerts.push({type:'danger', icon:'📦', msg:'مخزون منخفض: <strong>'+esc(item.name)+'</strong> — '+item.qty+' '+esc(item.unit||'')});
+  });
+  return alerts;
+}
+function checkNotifs() {
+  var alerts=buildAlerts();
+  var badge=document.getElementById('notifBadge');
+  if (alerts.length) { badge.textContent=alerts.length; badge.classList.add('show'); }
+  else badge.classList.remove('show');
+}
+function openNotifsModal() {
+  var alerts=buildAlerts(), html='';
+  if (!alerts.length) html='<div style="text-align:center;padding:30px;color:#888;font-size:16px">✅ لا توجد تنبيهات حالياً</div>';
+  else alerts.forEach(function(a) {
+    var bg=a.type==='danger'?'#ffeaea':'#fff8e1', border=a.type==='danger'?'#e74c3c':'#f39c12';
+    html+='<div style="background:'+bg+';border-right:4px solid '+border+';border-radius:10px;padding:12px;margin:8px 0;font-size:14px">'+a.icon+' '+a.msg+'</div>';
+  });
+  document.getElementById('notifsContent').innerHTML = html;
+  openModal('notifsModal');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INVENTORY
+// ═══════════════════════════════════════════════════════════
+function addInventoryItem() {
+  var name = (document.getElementById('invName')||{}).value||'';
+  var qty  = (document.getElementById('invQty') ||{}).value||'0';
+  var unit = (document.getElementById('invUnit')||{}).value||'';
+  var min  = (document.getElementById('invMin') ||{}).value||'';
+  var note = (document.getElementById('invNote')||{}).value||'';
+  if (!name.trim()||!qty) { alert('أدخل اسم المنتج والكمية'); return; }
+  data.inventory.push({ id:Date.now(), name:name.trim(), qty:qty, unit:unit, minQty:min, note:note, updatedAt:new Date().toISOString() });
+  ['invName','invQty','invUnit','invMin','invNote'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  saveData(); renderInvTable(); showToast('📦 تمت الإضافة'); checkNotifs();
+}
+function deleteInvItem(id) {
+  data.inventory = data.inventory.filter(function(i){ return i.id!==id; });
+  saveData(); renderInvTable(); checkNotifs();
+}
+function updateInvQty(id) {
+  var el=document.getElementById('invq-'+id); if(!el) return;
+  var item=data.inventory.find(function(i){ return i.id===id; }); if(!item) return;
+  item.qty=el.value; item.updatedAt=new Date().toISOString();
+  saveData(); checkNotifs(); showToast('📦 تم تحديث الكمية');
+}
+function renderInvTable() {
+  var c=document.getElementById('inventoryTableContainer'); if(!c) return;
+  if (!data.inventory||!data.inventory.length) { c.innerHTML='<div style="text-align:center;padding:20px;color:#888">لا توجد عناصر في المخزون</div>'; return; }
+  var html='<table class="inv-table"><thead><tr><th>المنتج</th><th>الكمية</th><th>الوحدة</th><th>الحد الأدنى</th><th>ملاحظة</th><th>الحالة</th><th></th></tr></thead><tbody>';
+  data.inventory.forEach(function(item) {
+    var low=item.minQty&&parseFloat(item.qty)<=parseFloat(item.minQty);
+    html+='<tr><td><strong>'+esc(item.name)+'</strong></td>';
+    html+='<td><input type="number" id="invq-'+item.id+'" value="'+esc(item.qty)+'" style="width:80px;padding:5px;margin:0" onchange="updateInvQty('+item.id+')"></td>';
+    html+='<td>'+esc(item.unit||'---')+'</td><td>'+(item.minQty||'---')+'</td><td>'+esc(item.note||'---')+'</td>';
+    html+='<td class="'+(low?'stock-low':'stock-ok')+'">'+(low?'⚠️ منخفض':'✅ كافي')+'</td>';
+    html+='<td><button class="btn btn-delete-small" onclick="deleteInvItem('+item.id+')">🗑️</button></td></tr>';
+  });
+  c.innerHTML=html+'</tbody></table>';
+}
+function openInventoryModal() { renderInvTable(); openModal('inventoryModal'); }
+
+// ═══════════════════════════════════════════════════════════
+//  CHARTS
+// ═══════════════════════════════════════════════════════════
+function openChartsModal() {
+  openModal('chartsModal');
+  setTimeout(buildCharts, 100);
+}
+function buildCharts() {
+  Object.keys(chartInstances).forEach(function(k) {
+    if (chartInstances[k] && k!=='monthly') { try { chartInstances[k].destroy(); } catch(e){} }
+  });
+  var catLabels=[], profitVals=[], profitColors=[], invData=[], revData=[];
+  data.categories.forEach(function(cat) {
+    catLabels.push(cat.name.substring(0,12));
+    var inv=cat.races.reduce(function(s,r){ return s+(r.price||0); },0);
+    var rev=cat.races.reduce(function(s,r){ return s+((r.sellPrice&&r.sold)?r.sellPrice*r.sold:0); },0);
+    var p=rev-inv; profitVals.push(p);
+    profitColors.push(p>=0?'rgba(39,174,96,.85)':'rgba(231,76,60,.85)');
+    invData.push(inv); revData.push(rev);
+  });
+  var breedLabels=[], hatchVals=[];
+  data.categories.forEach(function(cat) {
+    cat.races.filter(function(r){ return r.completed&&r.eggs>0; }).forEach(function(r) {
+      breedLabels.push(r.breed.substring(0,12));
+      hatchVals.push(Math.round(((r.hatched||0)/r.eggs)*100));
+    });
+  });
+  var chicksData=[], chicksLabels=[];
+  var pieColors=['#3498db','#27ae60','#f39c12','#9b59b6','#e74c3c','#1abc9c','#e67e22','#2c3e50'];
+  data.categories.forEach(function(cat) { var c=totalChicks(cat); if(c>0){chicksLabels.push(cat.name.substring(0,12));chicksData.push(c);} });
+
+  function mkBar(id, labels, datasets, yFmt) {
+    var ctx=document.getElementById(id); if(!ctx) return;
+    if(chartInstances[id]) { try{chartInstances[id].destroy();}catch(e){} }
+    chartInstances[id]=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:datasets},
+      options:{responsive:true,plugins:{legend:{display:datasets.length>1}},
+        scales:{y:{ticks:{callback:yFmt||function(v){return v;}}}}}});
+  }
+  mkBar('chartProfit', catLabels, [{label:'الربح (DH)',data:profitVals,backgroundColor:profitColors,borderRadius:6}], function(v){return v+' DH';});
+  mkBar('chartHatch',  breedLabels, [{label:'%',data:hatchVals,backgroundColor:'rgba(52,152,219,.85)',borderRadius:6}], function(v){return v+'%';});
+  mkBar('chartInvRev', catLabels,
+    [{label:'الاستثمار',data:invData,backgroundColor:'rgba(231,76,60,.75)',borderRadius:4},
+     {label:'الإيراد',  data:revData,backgroundColor:'rgba(39,174,96,.75)', borderRadius:4}],
+    function(v){return v+' DH';});
+
+  var c4=document.getElementById('chartChicks'); if(c4){
+    if(chartInstances.chartChicks){try{chartInstances.chartChicks.destroy();}catch(e){}}
+    chartInstances.chartChicks=new Chart(c4,{type:'doughnut',data:{labels:chicksLabels,datasets:[{data:chicksData,backgroundColor:pieColors.slice(0,chicksData.length)}]},
+      options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MONTHLY REPORT
+// ═══════════════════════════════════════════════════════════
+function openMonthlyModal() {
+  var monthly={};
+  data.categories.forEach(function(cat) {
+    cat.races.forEach(function(race) {
+      if(!race.completed||!race.hatchDate) return;
+      var d=new Date(race.hatchDate);
+      var key=d.getFullYear()+'-'+(String(d.getMonth()+1).padStart(2,'0'));
+      if(!monthly[key]) monthly[key]={invest:0,revenue:0,chicks:0,batches:0};
+      monthly[key].invest  +=(race.price||0);
+      monthly[key].revenue +=((race.sellPrice&&race.sold)?race.sellPrice*race.sold:0);
+      monthly[key].chicks  +=(race.hatched||0);
+      monthly[key].batches++;
+    });
+  });
+  var keys=Object.keys(monthly).sort().reverse();
+  var html='';
+  if(!keys.length) {
+    html='<div style="text-align:center;padding:30px;color:#888">لا توجد دفعات مكتملة بعد</div>';
+  } else {
+    html+='<div style="background:#f8f0ff;border-radius:14px;padding:14px;margin-bottom:14px"><canvas id="chartMonthly" height="110"></canvas></div>';
+    html+='<table class="month-table"><thead><tr><th>الشهر</th><th>الدفعات</th><th>الكتاكيت</th><th>الاستثمار</th><th>الإيراد</th><th>الربح</th><th>الهامش</th></tr></thead><tbody>';
+    var tI=0,tR=0,tC=0,tB=0;
+    keys.forEach(function(k) {
+      var m=monthly[k], p=m.revenue-m.invest, mg=m.revenue>0?Math.round((p/m.revenue)*100):0, pc=p>=0?'#27ae60':'#e74c3c';
+      tI+=m.invest; tR+=m.revenue; tC+=m.chicks; tB+=m.batches;
+      html+='<tr><td><strong>'+k+'</strong></td><td>'+m.batches+'</td><td>'+m.chicks+'</td><td>'+fMAD(m.invest)+'</td><td>'+fMAD(m.revenue)+'</td><td style="color:'+pc+';font-weight:700">'+fMAD(p)+'</td><td style="color:'+pc+'">'+mg+'%</td></tr>';
+    });
+    var tp=tR-tI, tpc=tp>=0?'#27ae60':'#e74c3c';
+    html+='<tr style="background:#e8f0fe;font-weight:700"><td>الإجمالي</td><td>'+tB+'</td><td>'+tC+'</td><td>'+fMAD(tI)+'</td><td>'+fMAD(tR)+'</td><td style="color:'+tpc+'">'+fMAD(tp)+'</td><td>---</td></tr>';
+    html+='</tbody></table>';
+  }
+  document.getElementById('monthlyContent').innerHTML=html;
+  openModal('monthlyModal');
+  if(keys.length) {
+    setTimeout(function(){
+      var ctx=document.getElementById('chartMonthly'); if(!ctx) return;
+      if(chartInstances.monthly){try{chartInstances.monthly.destroy();}catch(e){}}
+      var labels=keys.slice().reverse();
+      var pData=labels.map(function(k){ return monthly[k].revenue-monthly[k].invest; });
+      chartInstances.monthly=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{label:'الربح الشهري (DH)',data:pData,borderColor:'#8e44ad',backgroundColor:'rgba(142,68,173,.1)',fill:true,tension:.4,pointRadius:5,pointBackgroundColor:'#8e44ad'}]},
+        options:{responsive:true,scales:{y:{ticks:{callback:function(v){return v+' DH';}}}}}});
+    },120);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PRINT ALL CATEGORIES
+// ═══════════════════════════════════════════════════════════
+function printAllCategories() {
+  var gI=0,gR=0,gC=0,gE=0;
+  data.categories.forEach(function(cat){ cat.races.forEach(function(r){ gI+=(r.price||0); gR+=((r.sellPrice&&r.sold)?r.sellPrice*r.sold:0); gC+=(r.hatched||0); gE+=(r.eggs||0); }); });
+  var html='<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>تقرير المزرعة</title>';
+  html+='<style>body{font-family:Arial,sans-serif;direction:rtl;padding:24px;color:#222}h1{color:#1e3c72;border-bottom:3px solid #f39c12;padding-bottom:8px;margin-bottom:16px}h2{color:#1e3c72;margin:20px 0 8px;border-right:4px solid #27ae60;padding-right:8px}.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}.box{background:#f0f7ff;border-radius:8px;padding:12px;text-align:center}.box .v{font-size:20px;font-weight:700;color:#1e3c72}.box .l{font-size:11px;color:#666}table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}th{background:#1e3c72;color:#fff;padding:8px;text-align:right}td{padding:7px;border-bottom:1px solid #eee}tr:nth-child(even){background:#f8f9fa}.pb{page-break-after:always}@media print{button{display:none}}</style></head><body>';
+  html+='<button onclick="window.print()" style="background:#1e3c72;color:#fff;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;margin-bottom:16px">🖨️ طباعة / حفظ PDF</button>';
+  html+='<h1>🐔 تقرير مزرعة عبض وبيضة — '+new Date().toLocaleDateString('ar-MA')+'</h1>';
+  html+='<div class="sum"><div class="box"><div class="v">'+data.categories.length+'</div><div class="l">الفئات</div></div><div class="box"><div class="v">'+gC+'</div><div class="l">الكتاكيت</div></div><div class="box"><div class="v">'+fMAD(gR-gI)+'</div><div class="l">الربح</div></div><div class="box"><div class="v">'+(gE>0?Math.round((gC/gE)*100):0)+'%</div><div class="l">نسبة الفقس</div></div></div>';
+  data.categories.forEach(function(cat,idx){
+    var inv=cat.races.reduce(function(s,r){return s+(r.price||0);},0);
+    var rev=cat.races.reduce(function(s,r){return s+((r.sellPrice&&r.sold)?r.sellPrice*r.sold:0);},0);
+    html+='<h2>📁 '+esc(cat.name)+'</h2>';
+    html+='<div class="sum"><div class="box"><div class="v">'+cat.races.length+'</div><div class="l">سلالات</div></div><div class="box"><div class="v">'+totalChicks(cat)+'</div><div class="l">كتاكيت</div></div><div class="box"><div class="v">'+fMAD(inv)+'</div><div class="l">استثمار</div></div><div class="box"><div class="v" style="color:'+(rev-inv>=0?'#27ae60':'#e74c3c')+'">'+fMAD(rev-inv)+'</div><div class="l">ربح</div></div></div>';
+    if(cat.races.length){
+      html+='<table><thead><tr><th>السلالة</th><th>البيض</th><th>الكتاكيت</th><th>النجاح</th><th>التكلفة</th><th>الإيراد</th><th>الربح</th><th>الحالة</th></tr></thead><tbody>';
+      cat.races.forEach(function(r){
+        var rv=(r.sellPrice&&r.sold)?r.sellPrice*r.sold:0, p=rv-(r.price||0);
+        html+='<tr><td>'+esc(r.breed)+'</td><td>'+r.eggs+'</td><td>'+(r.hatched!=null?r.hatched:'---')+'</td><td>'+(r.eggs>0&&r.hatched!=null?Math.round(r.hatched/r.eggs*100)+'%':'---')+'</td><td>'+fMAD(r.price)+'</td><td>'+(rv?fMAD(rv):'---')+'</td><td style="color:'+(rv?(p>=0?'#27ae60':'#e74c3c'):'#888')+'">'+(rv?fMAD(p):'---')+'</td><td>'+(r.completed?'✅ مكتمل':'🔄 نشط')+'</td></tr>';
+      });
+      html+='</tbody></table>';
+    }
+    if(idx<data.categories.length-1) html+='<div class="pb"></div>';
+  });
+  if(data.inventory&&data.inventory.length){
+    html+='<h2>📦 المخزون</h2><table><thead><tr><th>المنتج</th><th>الكمية</th><th>الوحدة</th><th>الحد الأدنى</th><th>الحالة</th></tr></thead><tbody>';
+    data.inventory.forEach(function(item){
+      var low=item.minQty&&parseFloat(item.qty)<=parseFloat(item.minQty);
+      html+='<tr><td>'+esc(item.name)+'</td><td>'+item.qty+'</td><td>'+esc(item.unit||'')+'</td><td>'+(item.minQty||'---')+'</td><td style="color:'+(low?'#e74c3c':'#27ae60')+'">'+(low?'⚠️ منخفض':'✅ كافي')+'</td></tr>';
+    });
+    html+='</tbody></table>';
+  }
+  html+='</body></html>';
+  var w=window.open('','_blank'); if(w){w.document.write(html);w.document.close();} else alert('يرجى السماح للنوافذ المنبثقة');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CATEGORY PDF REPORT
+// ═══════════════════════════════════════════════════════════
+function generateCategoryReport(catId) {
+  var cat=data.categories.find(function(c){return c.id===catId;}); if(!cat) return;
+  var tI=cat.races.reduce(function(s,r){return s+(r.price||0);},0);
+  var tR=cat.races.reduce(function(s,r){return s+((r.sellPrice&&r.sold)?r.sellPrice*r.sold:0);},0);
+  var tH=cat.races.reduce(function(s,r){return s+(r.hatched||0);},0);
+  var tE=cat.races.reduce(function(s,r){return s+(r.eggs||0);},0);
+  var succ=tE>0?Math.round((tH/tE)*100):0, profit=tR-tI, pc=profit>=0?'#27ae60':'#e74c3c';
+  var rows='';
+  cat.races.forEach(function(r){
+    var rv=(r.sellPrice&&r.sold)?r.sellPrice*r.sold:0, p=rv-(r.price||0);
+    rows+='<tr><td>'+esc(r.breed)+'</td><td>'+r.eggs+'</td><td>'+(r.hatched!=null?r.hatched:'---')+'</td><td>'+(r.eggs>0&&r.hatched!=null?Math.round(r.hatched/r.eggs*100)+'%':'---')+'</td><td>'+fMAD(r.price)+'</td><td>'+(r.sellPrice?fMAD(r.sellPrice):'---')+'</td><td>'+(rv?fMAD(rv):'---')+'</td><td style="color:'+(rv?(p>=0?'#27ae60':'#e74c3c'):'#888')+';font-weight:700">'+(rv?fMAD(p):'---')+'</td><td>'+(r.completed?'✅':'🔄')+'</td></tr>';
+  });
+  var meds=[]; cat.races.forEach(function(r){(r.medicines||[]).forEach(function(m){meds.push('<li>'+esc(r.breed)+': '+esc(m.name)+' — '+fD(m.date)+'</li>');});});
+  var temps=[]; cat.races.forEach(function(r){(r.tempLogs||[]).forEach(function(t){temps.push('<tr><td>'+esc(r.breed)+'</td><td>'+fD(t.date)+'</td><td>'+t.temp+'°C</td><td>'+t.humidity+'%</td><td>'+esc(t.note||'---')+'</td></tr>');});});
+  var feedInfo=cat.feed?'<p>🌾 '+fN(cat.feed.kg,1)+' كجم | '+fMAD(cat.feed.price)+' | '+cat.feed.days+' يوم | '+fN(cat.feed.perDay,2)+' كجم/يوم</p>':'<p>لم يتم تسجيل بيانات العلف</p>';
+  var html='<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>تقرير '+esc(cat.name)+'</title><style>body{font-family:Arial,sans-serif;direction:rtl;padding:28px;color:#222}h1{color:#1e3c72;border-bottom:3px solid #f39c12;padding-bottom:8px}h2{color:#1e3c72;margin:20px 0 8px}.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0}.box{background:#f0f7ff;border-radius:10px;padding:14px;text-align:center;border-top:4px solid #3498db}.box .v{font-size:22px;font-weight:700;color:#1e3c72}.box .l{font-size:11px;color:#666}table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}th{background:#1e3c72;color:#fff;padding:9px;text-align:right}td{padding:8px;border-bottom:1px solid #eee}tr:nth-child(even){background:#f8f9fa}.sec{background:#f8f9fa;border-radius:10px;padding:14px;margin:14px 0;border-right:4px solid #8bc34a}@media print{button{display:none}}</style></head><body>';
+  html+='<button onclick="window.print()" style="background:#1e3c72;color:#fff;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;margin-bottom:16px">🖨️ طباعة / حفظ PDF</button>';
+  html+='<h1>📁 تقرير: '+esc(cat.name)+'</h1><p style="color:#888;font-size:13px">التاريخ: '+new Date().toLocaleDateString('ar-MA')+'</p>';
+  html+='<div class="sum"><div class="box"><div class="v">'+tE+'</div><div class="l">🥚 البيض</div></div><div class="box"><div class="v">'+tH+'</div><div class="l">🐥 الكتاكيت</div></div><div class="box"><div class="v">'+succ+'%</div><div class="l">✅ نسبة الفقس</div></div><div class="box" style="border-top-color:'+pc+'"><div class="v" style="color:'+pc+'">'+fMAD(profit)+'</div><div class="l">💰 الربح</div></div></div>';
+  html+='<div class="sum"><div class="box"><div class="v">'+fMAD(tI)+'</div><div class="l">💸 الاستثمار</div></div><div class="box"><div class="v">'+fMAD(tR)+'</div><div class="l">📈 الإيرادات</div></div><div class="box"><div class="v">'+cat.races.length+'</div><div class="l">🐓 السلالات</div></div><div class="box"><div class="v">'+cat.races.filter(function(r){return r.completed;}).length+'</div><div class="l">✅ المكتملة</div></div></div>';
+  html+='<h2>📋 تفاصيل السلالات</h2><table><thead><tr><th>السلالة</th><th>البيض</th><th>الكتاكيت</th><th>النجاح</th><th>التكلفة</th><th>سعر البيع</th><th>الإيراد</th><th>الربح</th><th>الحالة</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  html+='<div class="sec"><h2 style="margin:0 0 8px">🌾 العلف</h2>'+feedInfo+'</div>';
+  if(meds.length) html+='<div class="sec" style="border-right-color:#e74c3c"><h2 style="margin:0 0 8px">💉 الأدوية</h2><ul>'+meds.join('')+'</ul></div>';
+  if(temps.length) html+='<div class="sec" style="border-right-color:#3498db"><h2 style="margin:0 0 8px">🌡️ سجل الحرارة والرطوبة</h2><table><thead><tr><th>السلالة</th><th>التاريخ</th><th>الحرارة</th><th>الرطوبة</th><th>ملاحظة</th></tr></thead><tbody>'+temps.join('')+'</tbody></table></div>';
+  html+='</body></html>';
+  var w=window.open('','_blank'); if(w){w.document.write(html);w.document.close();} else alert('يرجى السماح للنوافذ المنبثقة');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TEMPERATURE LOG
+// ═══════════════════════════════════════════════════════════
+function addTempLog(catId, raceId) {
+  var cat=data.categories.find(function(c){return c.id===catId;}); if(!cat) return;
+  var race=cat.races.find(function(r){return r.id===raceId;}); if(!race) return;
+  if(!race.tempLogs) race.tempLogs=[];
+  var temp =(document.getElementById('temp-'+catId+'-'+raceId)||{}).value;
+  var hum  =(document.getElementById('hum-'+catId+'-'+raceId) ||{}).value;
+  var note =(document.getElementById('tnote-'+catId+'-'+raceId)||{}).value||'';
+  if(!temp||!hum){alert('أدخل درجة الحرارة والرطوبة');return;}
+  race.tempLogs.push({date:new Date().toISOString(), temp:parseFloat(temp), humidity:parseFloat(hum), note:note});
+  ['temp-'+catId+'-'+raceId,'hum-'+catId+'-'+raceId,'tnote-'+catId+'-'+raceId].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  saveData(); showToast('🌡️ تم تسجيل القراءة');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER RACE CARD
+// ═══════════════════════════════════════════════════════════
+function renderRaceCard(race, catId) {
+  var status=getStatus(race), progress=getProgress(race);
+  var days=Math.floor((new Date()-new Date(race.start))/86400000);
+  var showComplete=!race.completed&&days>=21;
+  var age=race.completed?calcAge(race.hatchDate):null;
+
+  var html='<div class="race-card">';
+  html+='<div class="race-header"><span class="race-name">'+esc(race.breed)+'</span><span class="status-badge '+status.cls+'">'+status.icon+' '+status.text+'</span></div>';
+  html+='<div class="progress-container"><div class="progress-bar" style="width:'+progress+'%">'+(progress>=20?'اليوم '+Math.min(days,21)+'/21':'')+'</div></div>';
+  html+='<div class="info-grid">';
+  html+='<div class="info-item"><div class="info-label">🥚 البيض</div><div class="info-value">'+race.eggs+'</div></div>';
+  html+='<div class="info-item"><div class="info-label">💰 التكلفة</div><div class="info-value mad-price">'+fMAD(race.price)+'</div></div>';
+  html+='<div class="info-item"><div class="info-label">📅 البدء</div><div class="info-value">'+fD(race.start)+'</div></div>';
+  html+='<div class="info-item"><div class="info-label">🐣 الفقس</div><div class="info-value">'+fD(race.d21)+'</div></div>';
+  html+='</div>';
+
+  if (!race.completed) {
+    html+='<div class="temp-section"><h4 style="margin-bottom:8px;color:#c0392b">🌡️ تسجيل الحرارة والرطوبة</h4>';
+    html+='<div class="inline-inputs">';
+    html+='<input type="number" id="temp-'+catId+'-'+race.id+'" placeholder="حرارة °C" step="0.1">';
+    html+='<input type="number" id="hum-'+catId+'-'+race.id+'" placeholder="رطوبة %" min="0" max="100">';
+    html+='<input type="text" id="tnote-'+catId+'-'+race.id+'" placeholder="ملاحظة">';
+    html+='<button class="btn btn-add-small" onclick="addTempLog('+catId+','+race.id+')">📝 تسجيل</button>';
+    html+='</div>';
+    if (race.tempLogs&&race.tempLogs.length) {
+      html+='<table class="temp-log-table" style="margin-top:8px"><thead><tr><th>التاريخ</th><th>الحرارة</th><th>الرطوبة</th><th>ملاحظة</th></tr></thead><tbody>';
+      race.tempLogs.slice(-4).reverse().forEach(function(t){
+        html+='<tr><td>'+fD(t.date)+'</td><td style="font-weight:700">'+t.temp+'°C</td><td>'+t.humidity+'%</td><td>'+esc(t.note||'---')+'</td></tr>';
+      });
+      html+='</tbody></table>';
+    }
+    html+='</div>';
+  }
+
+  if (race.completed) {
+    var hatched=race.hatched||0;
+    var success=hatched>0?Math.round((hatched/race.eggs)*100):0;
+    var revenue=(race.sellPrice&&race.sold)?race.sellPrice*race.sold:0;
+    var profit=revenue-race.price;
+    html+='<div class="age-display"><div class="age-big">🐔 '+(age?age.text:'---')+'</div><div>منذ '+fD(race.hatchDate)+'</div></div>';
+    html+='<div style="background:#e8f5e9;padding:8px;border-radius:8px;margin:8px 0;text-align:center">النجاح: <strong>'+success+'%</strong> ('+hatched+'/'+race.eggs+')</div>';
+    html+='<div class="profit-section"><h4>💰 الأرباح</h4>';
+    html+='<div class="inline-inputs">';
+    html+='<input type="number" id="sellprice-'+catId+'-'+race.id+'" placeholder="سعر البيع" value="'+(race.sellPrice||'')+'">';
+    html+='<input type="number" id="sold-'+catId+'-'+race.id+'" placeholder="العدد" value="'+(race.sold||'')+'">';
+    html+='<button class="btn btn-add-small" onclick="saveSales('+catId+','+race.id+')">حفظ</button>';
+    html+='</div>';
+    if(revenue) html+='<div style="margin-top:8px">الإيراد: '+fMAD(revenue)+'<br>الربح: <strong style="color:'+(profit>=0?'#27ae60':'#e74c3c')+'">'+fMAD(profit)+'</strong></div>';
+    html+='</div>';
+    html+='<div class="medicine-section"><h4>💉 الأدوية</h4>';
+    html+='<div class="inline-inputs">';
+    html+='<input type="text" id="medname-'+catId+'-'+race.id+'" placeholder="اسم الدواء">';
+    html+='<input type="date" id="meddate-'+catId+'-'+race.id+'">';
+    html+='<button class="btn btn-add-small" onclick="addMedicine('+catId+','+race.id+')">➕</button>';
+    html+='</div>';
+    html+='<div>'+(race.medicines||[]).map(function(m){return'<li>💊 '+esc(m.name)+' - '+fD(m.date)+'</li>';}).join('')+'</div>';
+    html+='</div>';
+    if(age&&age.days>0) html+='<div class="forecast-section">🌾 توقع علف 30 يوم: <strong>'+forecastFeed(hatched,age.days).toFixed(1)+' كجم</strong></div>';
+  }
+
+  if (showComplete) {
+    var today=new Date().toISOString().split('T')[0];
+    html+='<div class="completion-form"><div style="font-weight:700">🎉 تسجيل الفقس</div>';
+    html+='<div class="hatch-input-row"><label>العدد:</label><input type="number" id="hatched-'+catId+'-'+race.id+'" min="0" max="'+race.eggs+'" value="0"><span>من '+race.eggs+'</span></div>';
+    html+='<input type="date" id="hatchdate-'+catId+'-'+race.id+'" value="'+today+'">';
+    html+='<button class="btn btn-complete" onclick="completeRace('+catId+','+race.id+')">✅ تأكيد الإكمال</button>';
+    html+='</div>';
+  }
+
+  html+='<div class="action-buttons">';
+  html+='<button class="btn btn-edit" onclick="editRace('+catId+','+race.id+')">✏️ تعديل</button>';
+  html+='<button class="btn btn-delete-small" onclick="deleteRace('+catId+','+race.id+')">🗑️ حذف</button>';
+  html+='</div></div>';
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MAIN RENDER
+// ═══════════════════════════════════════════════════════════
+function render() {
+  var container=document.getElementById('categoriesList');
+  var empty=document.getElementById('emptyState');
+  var cs=document.getElementById('completedSection');
+
+  if (!data.categories||!data.categories.length) {
+    container.innerHTML=''; empty.style.display='block'; cs.style.display='none';
+    updateDashboard(); updateSidebar(); return;
+  }
+  empty.style.display='none';
+  var allCompleted=[], parts=[];
+
+  data.categories.forEach(function(cat) {
+    var active=cat.races.filter(function(r){return!r.completed;});
+    var done  =cat.races.filter(function(r){return r.completed;});
+    var ck=totalChicks(cat);
+    done.forEach(function(r){ allCompleted.push(Object.assign({},r,{categoryName:cat.name})); });
+
+    var ch='<div class="category-section" id="cat-'+cat.id+'">';
+    ch+='<div class="category-header" onclick="toggleCategory('+cat.id+')">';
+    ch+='<span class="category-name">📁 '+esc(cat.name)+' <span style="font-size:13px">('+cat.races.length+' | '+ck+' ك)</span></span>';
+    ch+='<div style="display:flex;gap:5px">';
+    ch+='<button class="btn btn-report" onclick="event.stopPropagation();generateCategoryReport('+cat.id+')">📄 تقرير</button>';
+    ch+='<button class="btn btn-delete-small" onclick="event.stopPropagation();deleteCategory('+cat.id+')">🗑️</button>';
+    ch+='</div></div>';
+    ch+='<div id="cat-content-'+cat.id+'" class="collapsible-content active">';
+
+    ch+='<div style="background:#fff;padding:12px;border-radius:8px;margin-bottom:12px;border:2px dashed #3498db">';
+    ch+='<input id="breed-'+cat.id+'" placeholder="نوع السلالة">';
+    ch+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+    ch+='<input id="eggs-'+cat.id+'" type="number" placeholder="عدد البيض">';
+    ch+='<input id="price-'+cat.id+'" type="number" placeholder="التكلفة (DH)">';
+    ch+='</div>';
+    ch+='<input id="date-'+cat.id+'" type="date">';
+    ch+='<button class="btn btn-add-small" onclick="addRace('+cat.id+')">➕ إضافة سلالة</button>';
+    ch+='</div>';
+
+    ch+='<div class="feed-card"><div style="font-weight:700;margin-bottom:8px">🌾 Feed Tracker</div>';
+    if (ck>0) {
+      var fd=cat.feed?'none':'block';
+      ch+='<div id="feed-form-'+cat.id+'" style="display:'+fd+'">';
+      ch+='<input type="number" id="feedkg-'+cat.id+'" placeholder="كمية العلف (كجم)" value="'+(cat.feed?cat.feed.kg:'')+'">';
+      ch+='<input type="number" id="feedprice-'+cat.id+'" placeholder="سعر العلف (DH)" value="'+(cat.feed?cat.feed.price:'')+'">';
+      ch+='<label>📅 بدء</label><input type="date" id="feedstart-'+cat.id+'" value="'+(cat.feed&&cat.feed.start?cat.feed.start.split('T')[0]:'')+'">';
+      ch+='<label>📅 انتهاء</label><input type="date" id="feedend-'+cat.id+'" value="'+(cat.feed&&cat.feed.end?cat.feed.end.split('T')[0]:'')+'">';
+      ch+='<button class="btn btn-feed" onclick="saveCategoryFeed('+cat.id+')">💾 حفظ العلف</button>';
+      ch+='</div>';
+      if (cat.feed) {
+        ch+='<div style="margin-top:8px"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-weight:700">🌾 نتائج</span><button class="btn btn-edit" style="padding:4px 10px;font-size:11px" onclick="editCategoryFeed('+cat.id+')">✏️</button></div>';
+        ch+='<div class="feed-results-grid">';
+        ch+='<div class="feed-stat"><div style="font-size:10px;color:#888">علف</div><div style="font-weight:700">'+fN(cat.feed.kg,1)+' كجم</div></div>';
+        ch+='<div class="feed-stat"><div style="font-size:10px;color:#888">التكلفة</div><div style="font-weight:700;color:#27ae60">'+fMAD(cat.feed.price)+'</div></div>';
+        ch+='<div class="feed-stat"><div style="font-size:10px;color:#888">المدة</div><div style="font-weight:700">'+cat.feed.days+' يوم</div></div>';
+        ch+='<div class="feed-stat"><div style="font-size:10px;color:#888">علف/يوم</div><div style="font-weight:700">'+fN(cat.feed.perDay,2)+' كجم</div></div>';
+        ch+='</div></div>';
+      }
+    } else {
+      ch+='<div style="background:#fff3e0;padding:10px;border-radius:8px">⚠️ أضف كتاكيت مكتملة لحساب العلف</div>';
+    }
+    ch+='</div>';
+
+    if(active.length) ch+='<div style="margin:10px 0 5px;font-weight:700;color:#1e3c72">🥚 نشطة ('+active.length+')</div>'+active.map(function(r){return renderRaceCard(r,cat.id);}).join('');
+    if(done.length)   ch+='<div style="margin:15px 0 5px;font-weight:700;color:#27ae60">🐥 مكتملة ('+done.length+')</div>'+done.map(function(r){return renderRaceCard(r,cat.id);}).join('');
+    if(!cat.races.length) ch+='<div style="text-align:center;padding:20px;color:#888">لا توجد سلالات</div>';
+
+    ch+='</div></div>';
+    parts.push(ch);
+  });
+  container.innerHTML=parts.join('');
+
+  if(allCompleted.length) {
+    cs.style.display='block';
+    allCompleted.sort(function(a,b){return(b.hatchDate||'')>(a.hatchDate||'')?1:-1;});
+    var html='<div class="compact-view">';
+    allCompleted.forEach(function(r){
+      var age=calcAge(r.hatchDate);
+      html+='<div class="race-card"><div><strong>'+esc(r.breed)+'</strong> <span style="font-size:10px">('+esc(r.categoryName)+')</span></div><div>🐔 '+(age?age.text:'')+'</div><div>'+(r.hatched||0)+'/'+r.eggs+'</div></div>';
+    });
+    document.getElementById('completedList').innerHTML=html+'</div>';
+  } else cs.style.display='none';
+
+  updateDashboard(); updateSidebar();
+}
+
+function updateDashboard() {
+  var cats=data.categories.length;
+  var races=data.categories.reduce(function(s,c){return s+c.races.length;},0);
+  var active=data.categories.reduce(function(s,c){return s+c.races.filter(function(r){return!r.completed;}).length;},0);
+  var compl=data.categories.reduce(function(s,c){return s+c.races.filter(function(r){return r.completed;}).length;},0);
+  var ck=data.categories.reduce(function(s,c){return s+c.races.reduce(function(s2,r){return s2+(r.hatched||0);},0);},0);
+  var inv=data.categories.reduce(function(s,c){return s+c.races.reduce(function(s2,r){return s2+(r.price||0);},0);},0);
+  var rev=0; data.categories.forEach(function(c){c.races.forEach(function(r){if(r.sellPrice&&r.sold)rev+=r.sellPrice*r.sold;});});
+  document.getElementById('totalCategories').textContent=cats;
+  document.getElementById('totalRaces').textContent=races;
+  document.getElementById('totalActive').textContent=active;
+  document.getElementById('totalCompleted').textContent=compl;
+  document.getElementById('totalChicks').textContent=ck;
+  document.getElementById('totalInvestment').textContent=fMAD(inv);
+  document.getElementById('totalRevenue').textContent=fMAD(rev);
+  document.getElementById('totalProfit').textContent=fMAD(rev-inv);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CRUD
+// ═══════════════════════════════════════════════════════════
+function addCategory() {
+  var name=document.getElementById('categoryName').value.trim();
+  if(!name){alert('الرجاء إدخال اسم الفئة!');return;}
+  data.categories.push({id:Date.now(),name:name,races:[],feed:null,createdAt:new Date().toISOString()});
+  document.getElementById('categoryName').value='';
+  saveData(); checkNotifs(); showToast('✅ تمت إضافة الفئة');
+}
+function deleteCategory(id) {
+  if(!confirm('حذف الفئة وجميع السلالات؟'))return;
+  data.categories=data.categories.filter(function(c){return c.id!==id;});
+  saveData(); checkNotifs(); showToast('🗑️ تم الحذف');
+}
+function toggleCategory(id) {
+  var el=document.getElementById('cat-content-'+id); if(el) el.classList.toggle('active');
+}
+function addRace(catId) {
+  var cat=data.categories.find(function(c){return c.id===catId;}); if(!cat) return;
+  var breed=((document.getElementById('breed-'+catId)||{}).value||'').trim();
+  var eggs=parseInt((document.getElementById('eggs-'+catId)||{}).value)||0;
+  var price=parseFloat((document.getElementById('price-'+catId)||{}).value)||0;
+  var date=(document.getElementById('date-'+catId)||{}).value||'';
+  if(!breed||!eggs||!date){alert('املأ جميع الحقول');return;}
+  var start=new Date(date), d18=new Date(date), d21=new Date(date);
+  d18.setDate(start.getDate()+18); d21.setDate(start.getDate()+21);
+  cat.races.push({id:Date.now(),breed:breed,eggs:eggs,price:price,start:start.toISOString(),d18:d18.toISOString(),d21:d21.toISOString(),hatched:null,hatchDate:null,completed:false,createdAt:new Date().toISOString()});
+  ['breed','eggs','price','date'].forEach(function(f){var el=document.getElementById(f+'-'+catId);if(el)el.value='';});
+  saveData(); checkNotifs(); showToast('🥚 تمت إضافة '+breed);
+}
+function deleteRace(catId, raceId) {
+  var cat=data.categories.find(function(c){return c.id===catId;}); if(!cat) return;
+  cat.races=cat.races.filter(function(r){return r.id!==raceId;});
+  saveData(); checkNotifs(); showToast('🗑️ حذف السلالة');
+}
+function editRace(catId, raceId) {
+  var cat=data.categories.find(function(c){return c.id===catId;}); if(!cat) return;
+  var race=cat.races.find(function(r){return r.id===raceId;}); if(!race) return;
+  var nb=prompt('تعديل النوع:',race.breed);
+  var ne=prompt('تعديل عدد البيض:',race.eggs);
+  var np=prompt('تعديل التكلفة (DH):',race.price);
+  if(nb&&nb.trim()) race.breed=nb.trim();
+  if(ne&&!isNaN(ne)) race.eggs=parseInt(ne);
+  if(np&&!isNaN(np)) race.price=parseFloat(np);
+  saveData(); showToast('✏️ تم التحديث');
+}
+function completeRace(catId, raceId) {
+  var cat=data.categories.find(function(c){return c.id===catId;}); if(!cat) return;
+  var race=cat.races.find(function(r){return r.id===raceId;}); if(!race) return;
+  var hi=document.getElementById('hatched-'+catId+'-'+raceId);
+  var di=document.getElementById('hatchdate-'+catId+'-'+raceId);
+  var count=hi?parseInt(hi.value)||0:0;
+  var hDate=di?di.value:null;
+  if(count<0||count>race.eggs){alert('عدد غير صالح!');return;}
+  if(!hDate){alert('أدخل تاريخ الفقس!');return;}
+  race.hatched=count; race.hatchDate=new Date(hDate).toISOString(); race.completed=true;
+  saveData(); checkNotifs(); showToast('🐥 تم تسجيل '+count+' كتكوت');
+}
+function saveCategoryFeed(catId) {
+  var cat=data.categories.find(function(c){return c.id===catId;}); if(!cat) return;
+  var kg=parseFloat((document.getElementById('feedkg-'+catId)||{}).value);
+  var price=parseFloat((document.getElementById('feedprice-'+catId)||{}).value)||0;
+  var start=(document.getElementById('feedstart-'+catId)||{}).value;
+  var end=(document.getElementById('feedend-'+catId)||{}).value;
+  if(!kg||!start||!end){alert('أدخل كمية العلف والتواريخ');return;}
+  if(kg<=0){alert('الكمية يجب أن تكون أكبر من صفر');return;}
+  var sd=new Date(start), ed=new Date(end);
+  if(ed<sd){alert('تاريخ الانتهاء يجب أن يكون بعد البدء');return;}
+  var days=Math.max(1,Math.ceil((ed-sd)/86400000)+1);
+  var ck=totalChicks(cat);
+  if(ck===0){alert('لا يوجد كتاكيت مكتملة في هذه الفئة');return;}
+  cat.feed={kg:kg,price:price,start:start,end:end,days:days,perDay:kg/days,perChick:(kg/days)/ck,costPerChick:price/ck,totalChicks:ck,updatedAt:new Date().toISOString()};
+  saveData(); showToast('🌾 تم حفظ بيانات العلف');
+}
+function editCategoryFeed(catId) {
+  var f=document.getElementById('feed-form-'+catId); if(f) f.style.display=f.style.display==='none'?'block':'none';
+}
+function addMedicine(catId, raceId) {
+  var cat=data.categories.find(function(c){return c.id===catId;}); if(!cat) return;
+  var race=cat.races.find(function(r){return r.id===raceId;}); if(!race) return;
+  if(!race.medicines) race.medicines=[];
+  var name=(document.getElementById('medname-'+catId+'-'+raceId)||{}).value||'';
+  var date=(document.getElementById('meddate-'+catId+'-'+raceId)||{}).value||'';
+  if(!name||!date){alert('أدخل اسم الدواء والتاريخ');return;}
+  race.medicines.push({name:name, date:date});
+  saveData(); showToast('💉 تم تسجيل الدواء');
+}
+function saveSales(catId, raceId) {
+  var cat=data.categories.find(function(c){return c.id===catId;}); if(!cat) return;
+  var race=cat.races.find(function(r){return r.id===raceId;}); if(!race) return;
+  var price=parseFloat((document.getElementById('sellprice-'+catId+'-'+raceId)||{}).value);
+  var sold=parseInt((document.getElementById('sold-'+catId+'-'+raceId)||{}).value);
+  if(isNaN(price)||isNaN(sold)||sold<0||price<0){alert('أدخل بيانات البيع');return;}
+  race.sellPrice=price; race.sold=sold;
+  saveData(); showToast('💰 تم تسجيل البيع');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════════
+function exportData() {
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='abdo_farm_'+new Date().toISOString().split('T')[0]+'.json';
+  a.click(); showToast('✅ تم تصدير البيانات');
+}
+function importData() {
+  var f=document.getElementById('importFile').files[0]; if(!f){alert('اختر ملفاً');return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try {
+      var imp=JSON.parse(e.target.result);
+      if(imp.categories!==undefined){ data=imp; if(!data.inventory)data.inventory=[]; saveData(); showToast('📥 تم الاستيراد'); checkNotifs(); }
+      else throw new Error('invalid');
+    } catch(ex){ alert('ملف غير صالح'); }
+  };
+  reader.readAsText(f);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════════════
+setInterval(function(){ updateDashboard(); checkNotifs(); }, 60000);
+window.onload = init;
+</script>
+</body>
+</html>
