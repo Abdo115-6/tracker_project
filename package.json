@@ -1,0 +1,12 @@
+{
+  "name": "abdo-farm-tracker",
+  "version": "1.0.0",
+  "description": "🐔 Chicken farm tracker application - IndexedDB, charts, inventory management",
+  "main": "index.html",
+  "scripts": {
+    "start": "echo 'Static HTML app - open index.html in browser'"
+  },
+  "keywords": ["farm", "chicken", "tracker", "incubator"],
+  "author": "Abdo115-6",
+  "license": "MIT"
+}
